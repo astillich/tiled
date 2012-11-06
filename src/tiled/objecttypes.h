@@ -25,6 +25,8 @@
 #include <QColor>
 #include <QVector>
 
+#include "properties.h"
+
 namespace Tiled {
 namespace Internal {
 
@@ -36,13 +38,16 @@ struct ObjectType
     ObjectType() : color(Qt::gray) {}
 
     ObjectType(const QString &name,
-               const QColor &color)
+               const QColor &color,
+               const Properties &properties)
         : name(name)
         , color(color)
+        , properties(properties)
     {}
 
     QString name;
     QColor color;
+    Properties properties;
 };
 
 typedef QVector<ObjectType> ObjectTypes;
@@ -57,7 +62,7 @@ public:
     QString errorString() const { return mError; }
 
 private:
-    QString mError;
+    QString mError;    
 };
 
 

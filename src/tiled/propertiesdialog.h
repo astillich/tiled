@@ -64,6 +64,8 @@ public:
      */
     ~PropertiesDialog();
 
+    PropertiesModel *model() const { return mModel; }
+
     /**
      * Applies the edited properties. It does this by constructing a
      * ChangeProperties command and adding it to the undo stack.

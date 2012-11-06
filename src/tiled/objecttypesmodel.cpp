@@ -37,7 +37,7 @@ int ObjectTypesModel::rowCount(const QModelIndex &parent) const
 
 int ObjectTypesModel::columnCount(const QModelIndex &parent) const
 {
-    return parent.isValid() ? 0 : 2;
+    return parent.isValid() ? 0 : 3;
 }
 
 QVariant ObjectTypesModel::headerData(int section,
@@ -51,6 +51,8 @@ QVariant ObjectTypesModel::headerData(int section,
                 return tr("Type");
             case 1:
                 return tr("Color");
+            case 2:
+                return tr("Properties");
             }
         } else if (role == Qt::TextAlignmentRole) {
             return Qt::AlignLeft;
@@ -69,8 +71,19 @@ QVariant ObjectTypesModel::data(const QModelIndex &index, int role) const
     const ObjectType &objectType = mObjectTypes.at(index.row());
 
     if (role == Qt::DisplayRole || role == Qt::EditRole)
+    {
         if (index.column() == 0)
             return objectType.name;
+
+        if (index.column() == 2)
+        {
+            QString values;
+            for (Properties::ConstIterator it=objectType.properties.begin(); it!=objectType.properties.end(); ++it)
+                values += QLatin1String(!values.isEmpty() ? ", " : "") + it.key();
+
+            return tr("Properties (%1)").arg(values);
+        }
+    }
 
     if (role == ColorRole && index.column() == 1)
         return objectType.color;
@@ -103,6 +116,14 @@ void ObjectTypesModel::setObjectTypeColor(int objectIndex, const QColor &color)
     mObjectTypes[objectIndex].color = color;
 
     const QModelIndex mi = index(objectIndex, 1);
+    emit dataChanged(mi, mi);
+}
+
+void ObjectTypesModel::setObjectTypeProperties(int objectIndex, const Properties &properties)
+{
+    mObjectTypes[objectIndex].properties = properties;
+
+    const QModelIndex mi = index(objectIndex, 2);
     emit dataChanged(mi, mi);
 }
 

@@ -24,12 +24,14 @@
 #include "languagemanager.h"
 #include "objecttypesmodel.h"
 #include "preferences.h"
+#include "propertiesdialog.h"
 #include "utils.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QStyledItemDelegate>
+#include <QUndoStack>
 
 #ifndef QT_NO_OPENGL
 #include <QGLFormat>
@@ -92,7 +94,6 @@ QSize ColorDelegate::sizeHint(const QStyleOptionViewItem &,
 {
     return QSize(50, 20);
 }
-
 
 PreferencesDialog::PreferencesDialog(QWidget *parent) :
     QDialog(parent),
@@ -229,6 +230,16 @@ void PreferencesDialog::objectTypeIndexClicked(const QModelIndex &index)
         QColor newColor = QColorDialog::getColor(color, this);
         if (newColor.isValid())
             mObjectTypesModel->setObjectTypeColor(index.row(), newColor);
+    } else if (index.column() == 2) {
+
+        Object object;
+        QUndoStack stack;
+        object.setProperties(mObjectTypesModel->objectTypes().at(index.row()).properties);
+
+        PropertiesDialog dlg(tr("Object Type"), &object, &stack, this);
+        if (dlg.exec() == QDialog::Accepted) {
+            mObjectTypesModel->setObjectTypeProperties(index.row(), object.properties());
+        }
     }
 }
 

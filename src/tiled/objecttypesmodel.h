@@ -54,6 +54,7 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
     void setObjectTypeColor(int objectIndex, const QColor &color);
+    void setObjectTypeProperties(int objectIndex, const Properties &properties);
     void removeObjectTypes(const QModelIndexList &indexes);
 
 public slots:

@@ -27,6 +27,7 @@
 #include "mapobject.h"
 #include "movemapobject.h"
 #include "objecttypesmodel.h"
+#include "propertiesmodel.h"
 #include "resizemapobject.h"
 
 #include <QGridLayout>
@@ -56,6 +57,9 @@ ObjectPropertiesDialog::ObjectPropertiesDialog(MapDocument *mapDocument,
     mUi->type->setModel(objectTypesModel);
     // No support for inserting new types at the moment
     mUi->type->setInsertPolicy(QComboBox::NoInsert);
+
+    connect(mUi->type, SIGNAL(activated(QString)), this, SLOT(typeChanged(QString)));
+    mPrevTypeName = mapObject->type();
 
     // Initialize UI with values from the map-object
     mUi->name->setText(mMapObject->name());
@@ -95,6 +99,7 @@ void ObjectPropertiesDialog::accept()
     changed |= mMapObject->y() != newPosY;
     changed |= mMapObject->width() != newWidth;
     changed |= mMapObject->height() != newHeight;
+    changed |= mMapObject->height() != newHeight;
 
     if (changed) {
         QUndoStack *undo = mMapDocument->undoStack();
@@ -117,4 +122,35 @@ void ObjectPropertiesDialog::accept()
     } else {
         PropertiesDialog::accept();
     }
+}
+
+void ObjectPropertiesDialog::typeChanged(const QString &typeName)
+{
+    Properties properties = model()->properties();
+
+    // remove previous type properties
+    foreach (const ObjectType &type, Preferences::instance()->objectTypes()) {
+
+        if (type.name == mPrevTypeName) {
+
+            for (Properties::ConstIterator it=type.properties.begin(); it!=type.properties.end(); it++)
+                properties.remove(it.key());
+            break;
+        }
+    }
+
+    // add properties defined by type
+    foreach (const ObjectType &type, Preferences::instance()->objectTypes()) {
+
+        if (type.name == typeName) {
+
+            for (Properties::ConstIterator it=type.properties.begin(); it!=type.properties.end(); it++)
+                properties[it.key()] = it.value();
+        }
+        break;
+    }
+
+    model()->setProperties(properties);
+
+    mPrevTypeName = typeName;
 }

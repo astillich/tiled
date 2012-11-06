@@ -51,9 +51,14 @@ public:
 
     void accept();
 
+private slots:
+
+    void typeChanged(const QString &typeName);
+
 private:
     MapDocument *mMapDocument;
     MapObject *mMapObject;
+    QString mPrevTypeName;
 
     Ui::ObjectPropertiesDialog *mUi;
 };

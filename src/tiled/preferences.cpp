@@ -76,11 +76,21 @@ Preferences::Preferences()
             mSettings->value(QLatin1String("Names")).toStringList();
     const QStringList colors =
             mSettings->value(QLatin1String("Colors")).toStringList();
+    const QList<QVariant> properties =
+            mSettings->value(QLatin1String("Properties")).value<QList<QVariant> >();
     mSettings->endGroup();
 
-    const int count = qMin(names.size(), colors.size());
+    const int count = qMin(names.size(), qMin(colors.size(), properties.size()));
     for (int i = 0; i < count; ++i)
-        mObjectTypes.append(ObjectType(names.at(i), QColor(colors.at(i))));
+    {
+        Properties typeProperties;
+
+        QMap<QString, QVariant> savedProperties = properties.at(i).value<QMap<QString, QVariant> >();
+        for (QMap<QString, QVariant>::ConstIterator it=savedProperties.begin(); it!=savedProperties.end(); ++it)
+            typeProperties[it.key()] = it.value().toString();
+
+        mObjectTypes.append(ObjectType(names.at(i), QColor(colors.at(i)), typeProperties));
+    }
 
     mSettings->beginGroup(QLatin1String("Automapping"));
     mAutoMapDrawing = boolValue("WhileDrawing");
@@ -241,14 +251,24 @@ void Preferences::setObjectTypes(const ObjectTypes &objectTypes)
 
     QStringList names;
     QStringList colors;
+    QList<QVariant> properties;
     foreach (const ObjectType &objectType, objectTypes) {
+
         names.append(objectType.name);
         colors.append(objectType.color.name());
+
+        QMap<QString, QVariant> typeProperties;
+        for (Properties::ConstIterator it=objectType.properties.begin(); it!=objectType.properties.end(); ++it)
+        {
+            typeProperties[it.key()] = it.value();
+        }
+        properties.append(typeProperties);
     }
 
     mSettings->beginGroup(QLatin1String("ObjectTypes"));
     mSettings->setValue(QLatin1String("Names"), names);
     mSettings->setValue(QLatin1String("Colors"), colors);
+    mSettings->setValue(QLatin1String("Properties"), properties);
     mSettings->endGroup();
 
     emit objectTypesChanged();
